@@ -6,7 +6,7 @@ public class Main {
 
 	public static void main(String[] args) {
 		Vertx vertx = Vertx.vertx();
-		WebSocketServer server = new WebSocketServer(8080);
+		WebSocketServer server = new WebSocketServer(9090);
 		vertx.deployVerticle(server);
 	}
 }
