@@ -1,26 +1,22 @@
 package prototype.websocket;
 
+import java.util.HashMap;
+import java.util.Map;
+
 import io.vertx.core.AbstractVerticle;
 import io.vertx.core.Vertx;
-import io.vertx.core.VertxOptions;
-import io.vertx.core.eventbus.EventBusOptions;
-import io.vertx.core.http.ClientAuth;
 import io.vertx.core.http.HttpServer;
-import io.vertx.core.http.HttpServerOptions;
-import io.vertx.core.net.JksOptions;
-import io.vertx.ext.web.Router;
-import io.vertx.ext.web.handler.BodyHandler;
-import io.vertx.ext.web.handler.CorsHandler;
-import io.vertx.ext.web.handler.HSTSHandler;
-import io.vertx.ext.web.handler.StaticHandler;
 
 public class WebSocketServer extends AbstractVerticle {
-	private final static int HTTP_OK = 200; // http ok code
-	
+	private final static String BROADCAST = "Broadcast";
 	private final int port;
+	private final Map<Integer, String> clients;
+	
+	private int idCounter = 1;
 	
 	public WebSocketServer(final int port) {
 		this.port = port;
+		clients = new HashMap<>();
 	}
 	
 	@Override 
@@ -29,27 +25,48 @@ public class WebSocketServer extends AbstractVerticle {
 	}
 
 	private void startServer(Vertx vertx) {
-		
 		HttpServer server = vertx.createHttpServer();
 	
 		server.webSocketHandler(webSocket -> {
 			
-			webSocket.handler(msg -> {
-				System.out.println("The msg is: " + msg);
-				if(msg.toString().equals("ping")) {
-					webSocket.writeTextMessage("pong");
-					System.out.println("Send Pong");
+			System.out.println("client Connected "+webSocket.textHandlerID());
+			//salvo un nuovo client
+			clients.put(this.idCounter++, webSocket.textHandlerID());
+			System.out.println("Clients \n" + clients.toString());
+			
+			
+			//Incremente periodiacamente il contatore del primo client
+			if(idCounter == 2) {
+				vertx.eventBus().localConsumer(webSocket.textHandlerID());
+				vertx.setPeriodic(3000, msg -> vertx.eventBus().publish(clients.get(1), "ackInc"));
+			}
+			
+			//registro broadcast sender
+			vertx.eventBus().consumer(BROADCAST, message -> {
+				webSocket.writeTextMessage(message.body().toString());
+            });
+			
+			// gestisco la logica di elaborazione dei messaggi ricevuti
+			webSocket.textMessageHandler(message -> {
+				if(message.toString().equals("inc")) {
+					webSocket.writeTextMessage("ackInc");
+					
+				}else if(message.toString().equals("incAll")) {
+					vertx.eventBus().publish(BROADCAST, "ackInc");
+				}else {
+					System.out.println("The message is not recognized");
 				}
-				
-			});
-		}).listen(port);
-		
-		
-//		Router router = Router.router(vertx);
-//		router.route().handler(HSTSHandler.create());
-//		//router.route().handler(HSTSHandler.create().allowedHeader("Access-Control-Allow-Origin"));
-//		router.route("/static/*").handler(StaticHandler.create("res/WebSocketClient/"));
-//		server.requestHandler(router).listen(port);
+				System.out.println("The msg is: " + message + "| id: " + webSocket.textHandlerID());
+              
+            });
+			
+			//Se un client è disconesso
+			webSocket.closeHandler(message ->{
+                System.out.println("client disconnected "+webSocket.textHandlerID());
+                clients.remove(clients.entrySet().stream().filter(f -> f.getValue().equals(webSocket.textHandlerID())).map(m -> m.getKey()).findFirst().get());
+            });
+			
+		}).listen(port);	
 		
 	}
 
