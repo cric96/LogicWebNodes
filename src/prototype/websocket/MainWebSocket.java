@@ -2,7 +2,7 @@ package prototype.websocket;
 
 import io.vertx.core.Vertx;
 
-public class Main {
+public class MainWebSocket {
 
 	public static void main(String[] args) {
 		Vertx vertx = Vertx.vertx();
