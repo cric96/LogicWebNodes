@@ -1,54 +1,53 @@
+const serverURL = 'ws://localhost:8080';
+
 let counter = 0;
 let label;
 
-let sock;
+let webSocket;
 
 let connection;
-
 let channel;
 
 window.onload = function(){
-	sock = new WebSocket('ws://localhost:8080');
-	label = document.getElementById("h1");
-
-	connection = new RTCPeerConnection();
-	connection.ondatachannel = receiveChannelCallback;
-	setUpSocket(sock);
-	label.innerHTML = counter;
-
-
-
-
-	document.getElementById("inc").onclick = () => sock.send('inc');
-	document.getElementById("incAll").onclick = () => channel.send('{"msg": "ackInc"}');//sock.send('incAll');
-	
-	document.getElementById("connect").onclick = () =>  connectPeers();
-	
+	man = new WebrtcManager();
+	setUpDOM();
+	setUpWebSocket();
 }
 
+// Set things up, connect event listeners
+function setUpDOM() {
+	label = document.getElementById("h1");
+	label.innerHTML = counter;
 
-function setUpSocket(sock){
+    // Set event listeners for user interface widgets
 
-	sock.onopen = function() {
+   	document.getElementById("inc").onclick = () => webSocket.send('inc');
+	document.getElementById("incAll").onclick = () => channel?.send('{"msg": "ackInc"}');
+	document.getElementById("connect").onclick = () =>  connectPeer();
+  }
+
+
+function setUpWebSocket(){
+	webSocket = new WebSocket(serverURL);
+
+	webSocket.onopen = function() {
 		console.log('open');
 	};
 
-	sock.onmessage = async ({data}) => {
+	webSocket.onmessage = async ({data}) => {
 		try{
 			let json = JSON.parse(data);
 			if(json.msg){
 				console.log('message', json.msg);
-				//obj = JSON.parse(data);
 				if(json.msg === "ackInc"){
 					label.innerHTML = ++counter;
 				}
 			}else if(json.desc){
 				if (json.desc.type === 'offer') {
+					connection = createConnection();
 					await connection.setRemoteDescription(json.desc);
-					//const stream = await navigator.mediaDevices.getUserMedia(constraints);
-					//stream.getTracks().forEach((track) => connection.addTrack(track, stream));
 					await connection.setLocalDescription(await connection.createAnswer());
-					sock.send(JSON.stringify({desc: connection.localDescription}));
+					webSocket.send(JSON.stringify({desc: connection.localDescription}));
 				} else if (json.desc.type === 'answer') {
 					await connection.setRemoteDescription(json.desc);
 				} else {
@@ -68,31 +67,28 @@ function setUpSocket(sock){
 		
 	};
 
-	sock.onclose = function() {
+	webSocket.onclose = function() {
 		console.log('close');
 	};
 
-	sock.onerror = function(error) {
+	webSocket.onerror = function(error) {
 		console.log('error', error.message);
 	};
 }
 
 
-function connectPeers(){
-	
+function connectPeer(){
 
+	connection = createConnection();
+	
+	
 	channel = connection.createDataChannel("Channel");
     channel.onopen = () => console.log("Opend p2p");//handleChannelOpen;
-	channel.onmessage = (m) => {
-		if(JSON.parse(m.data).msg === "ackInc"){
-			label.innerHTML = ++counter;
-		}
-		console.log("msg p2p:", m);// handleChannelOnMessage;
-	}
+	channel.onmessage = handleReceiveMessage;
 	channel.onclose = () => console.log("close p2p"); //handleChannelClose;
 
 	// Send any ice candidates to the other peer.
-	connection.onicecandidate = e => {if(e.candidate != null) sock.send(JSON.stringify(e.candidate))}
+	connection.onicecandidate = e => {if(e.candidate != null) webSocket.send(JSON.stringify(e.candidate))}
 
 	// Let the "negotiationneeded" event trigger offer generation.
 	connection.onnegotiationneeded = async () => {
@@ -100,7 +96,7 @@ function connectPeers(){
 			await connection.setLocalDescription(await connection.createOffer());
 			// Send the offer to the other peer.
 			obj = {desc: connection.localDescription};
-			sock.send(JSON.stringify(obj));
+			webSocket.send(JSON.stringify(obj));
 		} catch (err) {
 			console.error(err);
 		}
@@ -112,33 +108,36 @@ function connectPeers(){
 	};
 }
 
+function createConnection(){
+	let conn = new RTCPeerConnection();
+	conn.ondatachannel = receiveChannelCallback;
+	conn.oniceconnectionstatechange = handleReceiveChannelStatusChange;
+	return conn; 
+}
+
  function receiveChannelCallback(event) {
     channel = event.channel;
     channel.onopen = () => console.log("Opend p2p");//handleChannelOpen;
-	channel.onmessage = (m) => {
-		console.log("M.data.msg:", JSON.parse(m.data).msg);
-		if(JSON.parse(m.data).msg === "ackInc"){
-			label.innerHTML = ++counter;
-		}
-		console.log("msg p2p:", m);// handleChannelOnMessage;
-	}
+	channel.onmessage = handleReceiveMessage;
 	channel.onclose = () => console.log("close p2p"); //handleChannelClose;
   }
 
 
-// Call start() to initiate.
-async function start() {
-	try {
-		// Get local stream, show it in self-view, and add it to be sent.
-		const stream = await navigator.mediaDevices.getUserMedia(constraints);
-		stream.getTracks().forEach((track) => pc.addTrack(track, stream));
-		selfView.srcObject = stream;
-	} catch (err) {
-		console.error(err);
-	}
-}
-
 // Handle an error that occurs during addition of ICE candidate.
 function handleAddCandidateError() {
 	console.log("Oh noes! addICECandidate failed!");
+}
+
+function handleReceiveMessage(m){
+	console.log("M.data.msg:", JSON.parse(m.data).msg);
+	if(JSON.parse(m.data).msg === "ackInc"){
+		label.innerHTML = ++counter;
+	}
+	//console.log("msg p2p:", m);// handleChannelOnMessage;
+}
+
+function handleReceiveChannelStatusChange(event){
+	if(connection.iceConnectionState == 'disconnected'){
+			console.log("disconnected");
+	}
 }

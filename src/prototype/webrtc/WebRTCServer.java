@@ -1,6 +1,9 @@
 package prototype.webrtc;
 
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.LinkedList;
+import java.util.List;
 import java.util.Map;
 import org.json.*;
 
@@ -11,7 +14,7 @@ import io.vertx.core.http.HttpServer;
 public class WebRTCServer extends AbstractVerticle {
 	private final static String BROADCAST = "Broadcast";
 	private final int port;
-	private final Map<Integer, String> clients;
+	private final Map<String, List<String>> clients;
 	
 	private int idCounter = 1;
 	
@@ -33,8 +36,11 @@ public class WebRTCServer extends AbstractVerticle {
 			
 			System.out.println("client Connected "+webSocket.textHandlerID());
 			//salvo un nuovo client
-			clients.put(this.idCounter++, webSocket.textHandlerID());
-			System.out.println("Clients \n" + clients.toString());
+			
+			clients.entrySet().forEach(e -> e.getValue().add(webSocket.textHandlerID()));
+			clients.put(webSocket.textHandlerID(), new LinkedList<>(clients.keySet()));
+			
+			System.out.println("Clients: \n" + clients.entrySet().toString());
 			
 			
 			//Incremente periodiacamente il contatore del primo client
@@ -59,13 +65,22 @@ public class WebRTCServer extends AbstractVerticle {
 				}else {
 					try {
 						JSONObject json = new JSONObject(message);
-						int receiver = clients.get(1).equals(webSocket.textHandlerID()) ? 2 : 1; 
+						
 						if(json.has("desc")) {
 							System.out.println("This is desc");
-							vertx.eventBus().publish(clients.get(receiver), json.toString());
+							String type = json.getJSONObject("desc").get("type").toString();
+							if(type.equals("offer")) {
+								vertx.eventBus().publish(clients.get(webSocket.textHandlerID()).get(0), json.toString());
+							}else if(type.equals("answer")) {
+								vertx.eventBus().publish(clients.get(webSocket.textHandlerID()).get(0), json.toString());
+							}else {
+								System.out.println("Wrong type of msg");
+							}
+							
+							
 						}else if(json.has("candidate")) {
 							System.out.println("This is candidate");
-							vertx.eventBus().publish(clients.get(receiver),  json.toString());
+							vertx.eventBus().publish(clients.get(webSocket.textHandlerID()).get(0),  json.toString());
 						}
 						
 					}catch (JSONException ex) {
@@ -80,7 +95,8 @@ public class WebRTCServer extends AbstractVerticle {
 			//Se un client è disconesso
 			webSocket.closeHandler(message ->{
                 System.out.println("client disconnected "+webSocket.textHandlerID());
-                clients.remove(clients.entrySet().stream().filter(f -> f.getValue().equals(webSocket.textHandlerID())).map(m -> m.getKey()).findFirst().get());
+                clients.remove(webSocket.textHandlerID());
+                clients.entrySet().forEach(e -> e.getValue().remove(webSocket.textHandlerID()));
             });
 			
 		}).listen(port);	
