@@ -5,9 +5,6 @@ let label;
 
 let webSocket;
 
-let connection;
-let channel;
-
 let connectionsManager;
 
 window.onload = function(){
@@ -32,9 +29,9 @@ function setUpDOM() {
 function setUpWebSocket(){
 	webSocket = new WebSocket(serverURL);
 
-	webSocket.onopen = function() {
-		console.log('open');
-	};
+	webSocket.onopen = () => console.log('Open WebSocket connection with Server');
+	webSocket.onclose = () => console.log('Close WebSocket connection with Server');
+	webSocket.onerror =  (error) => console.log('error', error.message);
 
 	webSocket.onmessage = async ({data}) => {
 		try{
@@ -50,14 +47,5 @@ function setUpWebSocket(){
 		}catch(err){
 			console.error(err);
 		}
-		
-	};
-
-	webSocket.onclose = function() {
-		console.log('close');
-	};
-
-	webSocket.onerror = function(error) {
-		console.log('error', error.message);
 	};
 }
