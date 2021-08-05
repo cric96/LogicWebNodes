@@ -1,4 +1,7 @@
 # LogicWebNodes
+Import java project in Eclipse
+`File -> Import -> Maven -> Existing Maven Projects`
+
 
 ## WebSocket prototype
 For lunch:
