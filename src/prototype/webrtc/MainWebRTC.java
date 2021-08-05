@@ -10,5 +10,4 @@ public class MainWebRTC {
 		WebRTCServer server = new WebRTCServer(8080);
 		vertx.deployVerticle(server);
 	}
-
 }

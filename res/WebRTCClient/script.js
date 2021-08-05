@@ -10,7 +10,7 @@ let connectionsManager;
 window.onload = function(){
 	connectionsManager = new WebrtcManager();
 	setUpDOM();
-	setUpWebSocket();
+	setUpWebSocket();	
 }
 
 // Set things up, connect event listeners
@@ -22,7 +22,6 @@ function setUpDOM() {
 
    	document.getElementById("inc").onclick = () => webSocket.send('inc');
 	document.getElementById("incAll").onclick = () => connectionsManager.sendToAll('{"msg": "ackInc"}');
-	document.getElementById("connect").onclick = () =>  connectionsManager.addConnection();;
   }
 
 
@@ -36,12 +35,16 @@ function setUpWebSocket(){
 	webSocket.onmessage = async ({data}) => {
 		try{
 			let json = JSON.parse(data);
+			//console.log('JSON: ', json);
 			if(json.msg){
 				console.log('message', json.msg);
 				if(json.msg === "ackInc"){
 					label.innerHTML = ++counter;
+				}else if(json.msg === "connectionsAvailable"){
+					connectionsManager.connectionAvailable();
 				}
 			}else{
+				
 				connectionsManager.elaborateMsg(json);
 			} 
 		}catch(err){
