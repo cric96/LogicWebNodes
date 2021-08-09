@@ -36,9 +36,8 @@ public class Server extends AbstractVerticle {
 		new Thread(() -> {
 			while(true) {
 				try {
-					System.out.println("tick");
 					nodes.entrySet().stream().forEach(n -> n.getValue().incrementCounter());
-					Thread.sleep(2000);
+					Thread.sleep(5000);
 				}catch(Exception e) {
 					e.printStackTrace();
 				}
@@ -51,24 +50,17 @@ public class Server extends AbstractVerticle {
 	public void start() {
 		Router router = Router.router(vertx);
 		router.route().handler(BodyHandler.create());
-		router.get("/api/test").handler(this::handleSimpleRequest);	
 		router.get("/api/nodes/:id").handler(this::handleGetNode);
 		router.get("/api/nodes").handler(this::handleGetNodes);
+		router.put("/api/nodes/:id/counter").handler(this::handlerIncrementCounter);
 		//router.route("/static/*").handler(StaticHandler.create("res/client/"));  // for js client
-		vertx
-			.createHttpServer()
-			.requestHandler(router)
-			.listen(port);
+		vertx.createHttpServer()
+				.requestHandler(router)
+				.listen(port);
 	}
-	
-	private void handleSimpleRequest(RoutingContext routingContext) {
-		System.out.println("Hello world");
-		HttpServerResponse response = routingContext.response();
-		response.setStatusCode(HTTP_OK).end();
-	}
-	
+		
 	/*
-	 * Return state of the node that is searched by id 
+	 * Return state of the node 
 	 */
 	private void handleGetNode(RoutingContext routingContext) {
 		int id = Integer.valueOf(routingContext.request().getParam("id"));
@@ -96,5 +88,19 @@ public class Server extends AbstractVerticle {
 		.putHeader("content-type", "application/json")
 		.end(arr.toString());
 	}
-
+	
+	/*
+	 * Use id for searching a node and increment its counter
+	 */
+	private void handlerIncrementCounter(RoutingContext routingContext) {
+		int id = Integer.valueOf(routingContext.request().getParam("id"));
+		
+		HttpServerResponse response = routingContext.response();
+		if(nodes.containsKey(id)) {
+			nodes.get(id).incrementCounter();
+			response.setStatusCode(HTTP_OK).end();
+		}else {
+			response.setStatusCode(HTTP_NOT_FOUND).end();
+		}
+	}
 }
