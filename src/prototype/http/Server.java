@@ -30,20 +30,10 @@ public class Server extends AbstractVerticle {
 		nodes = new HashMap<>();
 		for(int i = 0; i < 5; i++) {
 			int id = idGenerator.next();
-			nodes.put(id, new CounterNodeImpl(id));
+			CounterNodeImpl newNode = new CounterNodeImpl(id);
+			new Thread(newNode).start();
+			nodes.put(id, newNode);
 		}
-		
-		new Thread(() -> {
-			while(true) {
-				try {
-					nodes.entrySet().stream().forEach(n -> n.getValue().incrementCounter());
-					Thread.sleep(5000);
-				}catch(Exception e) {
-					e.printStackTrace();
-				}
-				
-			}
-		}).start();
 	}
 	
 	@Override 

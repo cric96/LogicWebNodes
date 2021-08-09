@@ -2,7 +2,7 @@ package node;
 
 import org.json.JSONObject;
 
-public class CounterNodeImpl implements CounterNode {
+public class CounterNodeImpl implements CounterNode, Runnable {
 	private final int id;
 	volatile private int counter = 0;
 	
@@ -25,5 +25,18 @@ public class CounterNodeImpl implements CounterNode {
 	@Override
 	public int getId() {
 		return this.id;
+	}
+
+	@Override
+	public void run() {
+		while(true) {
+			try {
+				incrementCounter();
+				Thread.sleep(5000);
+			}catch(Exception e) {
+				e.printStackTrace();
+			}
+			
+		}
 	}
 }
