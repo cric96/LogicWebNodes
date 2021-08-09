@@ -26,5 +26,4 @@ public class CounterNodeImpl implements CounterNode {
 	public int getId() {
 		return this.id;
 	}
-	
 }

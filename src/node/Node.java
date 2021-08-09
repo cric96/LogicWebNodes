@@ -1,14 +1,17 @@
 package node;
 
-import org.json.*;
+import org.json.JSONObject;
 
 public interface Node {
 	
 	/**
-	 * Return a json that contains a state of node
+	 * @return a json object that contains a state of node
 	 */
 	JSONObject getState();
 	
+	/**
+	 * @return id of node
+	 */
 	int getId();
 
 }
