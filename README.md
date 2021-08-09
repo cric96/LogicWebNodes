@@ -6,9 +6,10 @@ For lunch:
 
 ## HTTP prototype
 1. Lunch Server `src/prototype/http/Main.java`
-2. Open a web page `http://localhost:8080/api/nodes/id` where `ìd` is a number from 0 to 4
-3. Open a web page `http://localhost:8080/api/nodes`
-4. Refresh web pages for get updated data
+2. Open a web page 
+    *  `http://localhost:8080/api/nodes/id` where `ìd` is a number from 0 to 4
+    *  `http://localhost:8080/api/nodes`
+5. Refresh the web page for get updated data
 
 
 ## WebSocket prototype
