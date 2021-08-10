@@ -1,43 +1,32 @@
+const serverURL = 'ws://localhost:8080';
+
 let counter = 0;
 let label;
 
-window.onload = function(){
-	let sock = new WebSocket('ws://localhost:8080');
-	label = document.getElementById("h1");
+let sock;
 
-	setUpSocket(sock);
+window.onload = function(){
+	setUpSocket();
+	
+	label = document.getElementById("h1");
 	label.innerHTML = counter;
 
-
-	document.getElementById("button").onclick = function(){
-		sock.send('inc');
-	}
-
-	document.getElementById("buttonAll").onclick = function(){
-		sock.send('incAll');
-	}
-	
+	document.getElementById("button").onclick = () => sock.send('inc');
+	document.getElementById("buttonAll").onclick = () => sock.send('incAll');
 }
 
 
-function setUpSocket(sock){
+function setUpSocket(){
+	sock = new WebSocket(serverURL);
 
-	sock.onopen = function() {
-		console.log('open');
-	};
+	sock.onopen = () => console.log('open');
+	sock.onclose = () => console.log('close');
+	sock.onerror = () => console.log('error', error.message);
 
 	sock.onmessage = function(msg) {
 		console.log('message', msg.data);
 		if(msg.data === 'ackInc'){
 			label.innerHTML = ++counter;
 		}
-	};
-
-	sock.onclose = function() {
-		console.log('close');
-	};
-
-	sock.onerror = function(error) {
-		console.log('error', error.message);
 	};
 }
