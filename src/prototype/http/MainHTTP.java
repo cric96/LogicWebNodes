@@ -2,11 +2,11 @@ package prototype.http;
 
 import io.vertx.core.Vertx;
 
-public class Main {
+public class MainHTTP {
 
 	public static void main(String[] args) {
 		Vertx vertx = Vertx.vertx();
-		Server server = new Server(8080);
+		HTTPServer server = new HTTPServer(8080);
 		vertx.deployVerticle(server);
 	}
 }

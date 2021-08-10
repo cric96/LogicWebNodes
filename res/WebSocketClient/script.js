@@ -2,7 +2,7 @@ let counter = 0;
 let label;
 
 window.onload = function(){
-	let sock = new WebSocket('ws://localhost:9090');
+	let sock = new WebSocket('ws://localhost:8080');
 	label = document.getElementById("h1");
 
 	setUpSocket(sock);

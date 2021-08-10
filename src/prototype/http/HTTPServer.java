@@ -14,16 +14,14 @@ import io.vertx.ext.web.RoutingContext;
 import io.vertx.ext.web.handler.BodyHandler;
 import node.*;
 
-public class Server extends AbstractVerticle {
+public class HTTPServer extends AbstractVerticle {
 	private final static int HTTP_OK = 200; // http ok code
 	private final static int HTTP_NOT_FOUND = 404;
 	private final int port;
 	
 	private final Map<Integer, CounterNode> nodes;
 	
-	
-	
-	public Server(final int port) {
+	public HTTPServer(final int port) {
 		this.port = port;
 		Iterator<Integer> idGenerator = Stream.iterate(0, i -> i + 1).iterator(); 
 		

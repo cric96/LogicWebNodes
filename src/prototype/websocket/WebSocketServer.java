@@ -35,11 +35,11 @@ public class WebSocketServer extends AbstractVerticle {
 			System.out.println("Clients \n" + clients.toString());
 			
 			
-			//Incremente periodiacamente il contatore del primo client
-			if(idCounter == 2) {
-				vertx.eventBus().localConsumer(webSocket.textHandlerID());
-				vertx.setPeriodic(3000, msg -> vertx.eventBus().publish(clients.get(1), "ackInc"));
-			}
+			//Incrementa periodiacamente il contatore del primo client
+//			if(idCounter == 2) {
+//				vertx.eventBus().localConsumer(webSocket.textHandlerID());
+//				vertx.setPeriodic(3000, msg -> vertx.eventBus().publish(clients.get(1), "ackInc"));
+//			}
 			
 			//registro broadcast sender
 			vertx.eventBus().consumer(BROADCAST, message -> {
