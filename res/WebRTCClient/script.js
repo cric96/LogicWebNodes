@@ -1,11 +1,12 @@
 const serverURL = 'ws://localhost:8080';
 
-let counter = 0;
 let label;
 
 let webSocket;
 
 let connectionsManager;
+
+let node;
 
 window.onload = function(){
 	connectionsManager = new WebrtcManager();
@@ -16,8 +17,6 @@ window.onload = function(){
 // Set things up, connect event listeners
 function setUpDOM() {
 	label = document.getElementById("h1");
-	label.innerHTML = counter;
-
     // Set event listeners for user interface widgets
 
    	document.getElementById("inc").onclick = () => webSocket.send('inc');
@@ -39,12 +38,15 @@ function setUpWebSocket(){
 			if(json.msg){
 				console.log('message', json.msg);
 				if(json.msg === "ackInc"){
-					label.innerHTML = ++counter;
+					node.incrementCounter();
+					label.innerHTML = node.getCounter();
 				}else if(json.msg === "connectionsAvailable"){
 					connectionsManager.connectionAvailable();
 				}
+			}else if(json.yourid != null){
+				node = new CounterNode(json.yourid, webSocket);
+				label.innerHTML = node.getCounter();
 			}else{
-				
 				connectionsManager.elaborateMsg(json);
 			} 
 		}catch(err){

@@ -48,7 +48,7 @@ class WebrtcManager{
 			console.log("received candidate: ");
 			await this.#getLastPeer().peerConnection.addIceCandidate(json);
 		}else{
-			console.log("the received msg is not recognized: " + data);
+			console.log("The received msg is not recognized: ", json);
 		}
 	}
 
@@ -125,7 +125,8 @@ class ConnectedPeer{
 		this.channel.onmessage = (m) => {
 			console.log("A messge from p2p channel:", JSON.parse(m.data).msg);
 			if(JSON.parse(m.data).msg === "ackInc"){
-				label.innerHTML = ++counter;
+				node.incrementCounter();
+				label.innerHTML = node.getCounter();
 			}
 		}
 		this.channel.onclose = () => console.log("Close a P2P connection"); //handleChannelClose;
