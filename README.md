@@ -31,7 +31,7 @@ Use logic nodes.
 1. Lunch Server `src/prototype/webrtc/MainWebRTC.java`
 2. Open 2 or more web pages `..../res/WebRTCClient/index.html` in browser(Tested only in Chrome).
   Each new web page will connect automatically with all peers
-3. Open a web page `..../res/Gestore/index.html` for visualizzation node states. 
+3. Open a web page `..../res/Gestore/index.html` for nodes state visualization. 
 4. Click "Increment" for ask server to increment counter
 5. Click "Increment All" for increment counters of all connected peers 
 
