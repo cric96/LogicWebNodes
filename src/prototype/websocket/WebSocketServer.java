@@ -1,22 +1,36 @@
 package prototype.websocket;
 
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.Map;
+import java.util.Optional;
+import java.util.stream.Stream;
 
 import io.vertx.core.AbstractVerticle;
+import io.vertx.core.Future;
 import io.vertx.core.Vertx;
 import io.vertx.core.http.HttpServer;
+import io.vertx.core.http.ServerWebSocket;
+import io.vertx.ext.web.Router;
+import io.vertx.ext.web.RoutingContext;
+import manager.StateObserver;
+import manager.StateObserverImpl;
+import node.CounterNode;
+import node.CounterNodeImpl;
+import node.ObservableCounterNode;
 
 public class WebSocketServer extends AbstractVerticle {
 	private final static String BROADCAST = "Broadcast";
 	private final int port;
-	private final Map<Integer, String> clients;
 	
-	private int idCounter = 1;
+	private final Map<Integer, CounterNode> nodes;
+	private StateObserver manager = null;
 	
 	public WebSocketServer(final int port) {
 		this.port = port;
-		clients = new HashMap<>();
+		
+		nodes = new HashMap<>();
+
 	}
 	
 	@Override 
@@ -28,18 +42,7 @@ public class WebSocketServer extends AbstractVerticle {
 		HttpServer server = vertx.createHttpServer();
 	
 		server.webSocketHandler(webSocket -> {
-			
-			System.out.println("client Connected "+webSocket.textHandlerID());
-			//salvo un nuovo client
-			clients.put(this.idCounter++, webSocket.textHandlerID());
-			System.out.println("Clients \n" + clients.toString());
-			
-			
-			//Incrementa periodiacamente il contatore del primo client
-//			if(idCounter == 2) {
-//				vertx.eventBus().localConsumer(webSocket.textHandlerID());
-//				vertx.setPeriodic(3000, msg -> vertx.eventBus().publish(clients.get(1), "ackInc"));
-//			}
+			System.out.println("client Connected "+ webSocket.textHandlerID());	
 			
 			//registro broadcast sender
 			vertx.eventBus().consumer(BROADCAST, message -> {
@@ -53,6 +56,14 @@ public class WebSocketServer extends AbstractVerticle {
 					
 				}else if(message.toString().equals("incAll")) {
 					vertx.eventBus().publish(BROADCAST, "ackInc");
+				}else if(message.toString().equals("subscribe")) {
+					manager = new StateObserverImpl(webSocket);
+					for(int id = 0; id < 5; id++) {
+						ObservableCounterNode newNode = new ObservableCounterNode(id, manager);
+						new Thread(newNode).start();
+						nodes.put(id, newNode);
+					}
+				
 				}else {
 					System.out.println("The message is not recognized");
 				}
@@ -61,13 +72,13 @@ public class WebSocketServer extends AbstractVerticle {
             });
 			
 			//Se un client è disconesso
-			webSocket.closeHandler(message ->{
+			webSocket.closeHandler(message -> {
                 System.out.println("client disconnected "+webSocket.textHandlerID());
-                clients.remove(clients.entrySet().stream().filter(f -> f.getValue().equals(webSocket.textHandlerID())).map(m -> m.getKey()).findFirst().get());
             });
 			
-		}).listen(port);	
+		});	
+		
+		server.listen(port);
 		
 	}
-
 }
