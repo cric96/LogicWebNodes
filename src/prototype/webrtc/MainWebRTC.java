@@ -1,7 +1,6 @@
 package prototype.webrtc;
 
 import io.vertx.core.Vertx;
-import prototype.websocket.WebSocketServer;
 
 public class MainWebRTC {
 
