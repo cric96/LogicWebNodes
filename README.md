@@ -6,10 +6,11 @@ For lunch:
 
 ## HTTP prototype
 1. Lunch Server `src/prototype/http/Main.java`
-2. Open a web page 
+2. Open a web page(method GET) 
     *  `http://localhost:8080/api/nodes/id` where `ìd` is a number from 0 to 4
     *  `http://localhost:8080/api/nodes`
-5. Refresh the web page for get updated data
+3. Use HTTP method PUT for increment the counter of a node `http://localhost:8080/api/nodes/id/counter` where `id` is a number from 0 to 4
+4. Refresh the web page for get updated data
 
 
 ## WebSocket prototype
