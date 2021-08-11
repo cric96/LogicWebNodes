@@ -14,10 +14,18 @@ For lunch:
 
 
 ## WebSocket prototype
+### Old version
 1. Lunch Server `src/prototype/websocket/MainWebSocket.java`
 2. Open 2 or more web pages `..../res/WebSocketClient/index.html` in browser(Tested only in Chrome)
 3. Click "Increment" for ask server to increment counter
 4. Click "Increment All" for ask server to increment all counters
+
+### New version
+Use logic nodes.
+1. Lunch Server `src/prototype/websocket/MainWebSocket.java`
+2. Open a web page `..../res/Gestore/index.html` in browser(Tested only in Chrome) 
+3. Observe node state changes
+
 
 ## WebRTC prototype
 1. Lunch Server `src/prototype/webrtc/MainWebRTC.java`
