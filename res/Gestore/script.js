@@ -25,22 +25,26 @@ function setUpWebSocket(){
 		try{	
 			let json = JSON.parse(msg.data);
 			let listItem = document.getElementById(json.id);
-			console.log("listitem", listItem);
-			if(listItem != null){
-				listItem.lastChild.textContent = " | Counter: " + json.counter;
-
+			if(json.id != null && json.counter != null){
+				if(listItem != null){
+					listItem.lastChild.textContent = " | Counter: " + json.counter;
+	
+				}else{
+					let li = document.createElement('li');
+					li.id = json.id;
+					let idLabel = document.createTextNode("Node Id: " + json.id);
+					let counterLabel = document.createTextNode(" |  Counter: " + json.counter);
+					li.appendChild(idLabel);
+					li.appendChild(counterLabel);
+	
+					let children = list.children;
+	
+					list.appendChild(li);
+				}	
 			}else{
-				let li = document.createElement('li');
-				li.id = json.id;
-				let idLabel = document.createTextNode("Node Id: " + json.id);
-				let counterLabel = document.createTextNode(" |  Counter: " + json.counter);
-				li.appendChild(idLabel);
-				li.appendChild(counterLabel);
-
-				let children = list.children;
-
-				list.appendChild(li);
-			}	
+				console.log("Unrecognized msg:", json);
+			}
+			
 		}catch(err){
 			console.error(err);
 		}
