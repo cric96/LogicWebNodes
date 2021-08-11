@@ -32,11 +32,15 @@ public class CounterNodeImpl implements CounterNode, Runnable {
 		while(true) {
 			try {
 				incrementCounter();
-				Thread.sleep(5000);
+				Thread.sleep(getSleepDelay());
 			}catch(Exception e) {
 				e.printStackTrace();
 			}
 			
 		}
+	}
+	
+	protected int getSleepDelay() {
+		return (id+1) * 1000;
 	}
 }
